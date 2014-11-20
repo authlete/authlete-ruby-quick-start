@@ -48,6 +48,7 @@ service-owner.json.
 
 ```sh
 curl -v --user ${SERVICE_OWNER_API_KEY}:${SERVICE_OWNER_API_SECRET} \
+     -H "Content-Type:application/json;charset=UTF-8" \
      -d @service-original.json -o service.json \
      https://evaluation-dot-authlete.appspot.com/api/service/create
 ```
@@ -65,6 +66,7 @@ service.json.
 
 ```sh
 curl -v --user ${SERVICE_API_KEY}:${SERVICE_API_SECRET} \
+     -H "Content-Type:application/json;charset=UTF-8" \
      -d @client-original.json -o client.json \
      https://evaluation-dot-authlete.appspot.com/api/client/create
 ```
@@ -78,7 +80,7 @@ API key and your client's client ID. The value of ${CLIENT_ID} can be found
 in client.json which was created as the result of the curl command above.
 
 ```
-https://evaluation-dot-authlete.appspot.com/auth/authorization/direct/${SERVICE_API_KEY}
+https://evaluation-dot-authlete.appspot.com/api/auth/authorization/direct/${SERVICE_API_KEY}
 ?response_type=code&client_id=${CLIENT_ID}
 ```
 
