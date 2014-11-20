@@ -1,0 +1,45 @@
+{
+  "authTimeRequired": false,
+  "clientName": "Sample Client",
+  "clientType": "PUBLIC",
+  "clientUri": "https://evaluation-dot-authlete.appspot.com/mock/client/index.html",
+  "clientUris": null,
+  "contacts": [
+    "support@example.com"
+  ],
+  "defaultMaxAge": 0,
+  "description": "This is a sample client application.",
+  "descriptions": null,
+  "developer": "joe",
+  "grantTypes": [
+    "AUTHORIZATION_CODE",
+    "IMPLICIT",
+    "PASSWORD",
+    "CLIENT_CREDENTIALS",
+    "REFRESH_TOKEN"
+  ],
+  "idTokenSignAlg": "RS256",
+  "jwksUri": null,
+  "loginUri": null,
+  "logoUri": "https://www.authlete.com/mock/client/logo.png",
+  "logoUris": null,
+  "policyUri": "https://www.authlete.com/mock/client/policy.html",
+  "redirectUris": [
+    "https://evaluation-dot-authlete.appspot.com/api/mock/redirection"
+  ],
+  "requestUris": null,
+  "responseTypes": [
+    "NONE",
+    "CODE",
+    "TOKEN",
+    "ID_TOKEN",
+    "CODE_TOKEN",
+    "CODE_ID_TOKEN",
+    "ID_TOKEN_TOKEN",
+    "CODE_ID_TOKEN_TOKEN"
+  ],
+  "subjectType": "PUBLIC",
+  "tokenAuthMethod": "CLIENT_SECRET_BASIC",
+  "tosUri": "https://evaluation-dot-authlete.appspot.com/mock/client/tos.html",
+  "tosUris": null
+}

@@ -1,0 +1,111 @@
+{
+  "accessTokenDuration": 3600,
+  "accessTokenType": "Bearer",
+  "authenticationCallbackApiKey": "authentication-api-key",
+  "authenticationCallbackApiSecret": "authentication-api-secret",
+  "authenticationCallbackEndpoint": "https://evaluation-dot-authlete.appspot.com/api/mock/authentication",
+  "authorizationEndpoint": "https://evaluation-dot-authlete.appspot.com/api/auth/authorization/direct/0",
+  "description": "This is a sample service.",
+  "idTokenDuration": 3600,
+  "issuer": "https://example.com",
+  "jwks": null,
+  "jwksUri": null,
+  "policyUri": "https://evaluation-dot-authlete.appspot.com/mock/service/policy.html",
+  "refreshTokenDuration": 864000,
+  "serviceDocumentation": "https://evaluation-dot-authlete.appspot.com/mock/service/index.html",
+  "serviceName": "Sample Service",
+  "supportedClaimLocales": [
+    "en",
+    "ja"
+  ],
+  "supportedClaimTypes": [
+    "NORMAL"
+  ],
+  "supportedClaims": [
+    "sub",
+    "name",
+    "given_name",
+    "family_name",
+    "middle_name",
+    "nickname",
+    "preferred_username",
+    "profile",
+    "picture",
+    "website",
+    "email",
+    "email_verified",
+    "gender",
+    "birthdate",
+    "zoneinfo",
+    "locale",
+    "phone_number",
+    "phone_number_verified",
+    "address",
+    "updated_at"
+  ],
+  "supportedDisplays": [
+    "PAGE",
+    "POPUP",
+    "TOUCH",
+    "WAP"
+  ],
+  "supportedGrantTypes": [
+    "AUTHORIZATION_CODE",
+    "IMPLICIT",
+    "PASSWORD",
+    "CLIENT_CREDENTIALS",
+    "REFRESH_TOKEN"
+  ],
+  "supportedResponseTypes": [
+    "NONE",
+    "CODE",
+    "TOKEN",
+    "ID_TOKEN",
+    "CODE_TOKEN",
+    "CODE_ID_TOKEN",
+    "ID_TOKEN_TOKEN",
+    "CODE_ID_TOKEN_TOKEN"
+  ],
+  "supportedScopes": [
+    {
+      "defaultEntry": false,
+      "name": "openid"
+    },
+    {
+      "defaultEntry": true,
+      "name": "profile"
+    },
+    {
+      "defaultEntry": false,
+      "name": "email"
+    },
+    {
+      "defaultEntry": false,
+      "name": "address"
+    },
+    {
+      "defaultEntry": false,
+      "name": "phone"
+    },
+    {
+      "defaultEntry": false,
+      "name": "offline_access"
+    },
+    {
+      "defaultEntry": true,
+      "name": "saying"
+    }
+  ],
+  "supportedTokenAuthMethods": [
+    "NONE",
+    "CLIENT_SECRET_BASIC",
+    "CLIENT_SECRET_POST"
+  ],
+  "supportedUiLocales": [
+    "en",
+    "ja"
+  ],
+  "tokenEndpoint": "https://evaluation-dot-authlete.appspot.com/api/auth/token/direct/0",
+  "tosUri": "https://evaluation-dot-authlete.appspot.com/mock/service/tos.html",
+  "userInfoEndpoint": null
+}
