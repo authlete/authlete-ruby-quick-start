@@ -16,9 +16,9 @@ of your service.
 
 
 <hr>
-# Quick Start
+# 1. Set Up Service and Client Application
 
-## 1. Register Your Account
+## 1.1 Register Your Account
 
 1. Go to "[Sign Up for Evaluation](https://www.authlete.com/user/registration/evaluation)" page.
 2. Register your account, and an email for confirmation will be sent to you.
@@ -29,7 +29,7 @@ of your service.
 7. Save the downloaded JSON file (service-owner.json) in your local machine.
 
 
-## 2. Download This Source
+## 1.2 Download This Source
 
 Execute the following command to download this source.
 
@@ -39,7 +39,7 @@ cd authlete-ruby-quick-start
 ```
 
 
-## 3. Register Your Service
+## 1.3 Register Your Service
 
 Execute the following command to register the definition of your service.
 ${SERVICE_OWNER_API_KEY} and ${SERVICE_OWNER_API_SECRET} in the command
@@ -57,7 +57,7 @@ Note: The response from Authlete API may take a long time (a few tens of
 seconds) if Authlete server is in sleep mode when you access it.
 
 
-## 4. Register Your Client Application
+## 1.4 Register Your Client Application
 
 Execute the following command to register the definition of your client
 application. ${SERVICE_API_KEY} and ${SERVICE_API_SECRET} in the command
@@ -72,7 +72,7 @@ curl -v --user ${SERVICE_API_KEY}:${SERVICE_API_SECRET} \
 ```
 
 
-## 5. Make an Authorization Request
+## 1.5 Make an Authorization Request
 
 Access the following URL with your browser. Of course, don't forget to
 replace ${SERVICE_API_KEY} and ${CLIENT_ID} in the URL with your service's
@@ -91,7 +91,7 @@ of your service. On success, you will see an authorization UI like below.
 ![Authorization UI](images/authorization-ui.png)
 
 
-## 6. Authorize The Client Application
+## 1.6 Authorize The Client Application
 
 Input any arbitrary strings to "Login ID" and "Password" fields (any value
 other than "nobody" is accepted as a valid login ID). Then, press "Authorize"
@@ -110,7 +110,7 @@ by Authlete. A redirection endpoint is supposed to be implemented by a developer
 of a client application.
 
 
-## 7. Make a Token Request
+## 1.7 Make a Token Request
 
 The mock implementation of the redirection endpoint contains a form to make
 a [token request](https://tools.ietf.org/html/rfc6749#section-4.1.3) to the
@@ -137,7 +137,7 @@ by RFC 6749), so you have to make a token request without a big delay
 after an authorization code was issued.
 
 
-## 8. Summary
+## 1.8 Summary
 
 If you have reached here without any trouble, it means that your service has
 completed [Authorization Code Flow](https://tools.ietf.org/html/rfc6749#section-4.1)
@@ -149,7 +149,38 @@ authenticate end-users.
 
 
 <hr>
-# Authentication Callback Endpoint
+# 2. Authentication Callback Endpoint
+
+## 2.1 Install Authlete Gem
+
+Execute the following command to install the [authlete gem](https://rubygems.org/gems/authlete).
+
+```sh
+gem install authlete
+```
+
+
+## 2.2
+
+Execute the following command to start a sample authentication server which
+implements an *authentication callback endpoint*.
+
+```sh
+rackup --port 9000 authentication-server.ru &
+```
+
+
+## 2.3
+
+Make an authentication request to test the authentication server.
+
+```sh
+curl -v --user authentication-api-key:authentication-api-secret \
+     -H 'Content-Type:application/json;charset=UTF-8' \
+     -d authentication-request.json \
+     http://localhost:9000/authentication
+```
+
 
 TBW
 
