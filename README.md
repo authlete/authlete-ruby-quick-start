@@ -399,7 +399,18 @@ resouce endpoints.
     `null`.
 
 
-## 2.8 About Sample Implementation
+## 2.8 About Sample Implementations
+
+In this repository, two authentication server implementations are included.
+One is `authentication-server.rb` which you have used so far. The other is
+`authentication-server-sinatra.rb` which is a very simple implementation
+based on [Sinatra](http://www.sinatrarb.com/). If you want to grab the
+overall picture of authentication callback endpoint, the source code based
+on Sinatra may be better to look into.
+
+
+<h4>
+# 3. Protected Resource Endpoint
 
 TBW
 
