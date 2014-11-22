@@ -65,11 +65,6 @@ class AuthenticationServer < Authlete::AuthenticationServer
     # authorization request which has triggered this authentication
     # callback request.
 
-    # If no claims are requested.
-    if req.claims == nil
-      return nil
-    end
-
     # Hash for claim values.
     values = {}
 
