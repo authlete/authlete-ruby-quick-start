@@ -268,6 +268,17 @@ $ curl -v --user ${SERVICE_OWNER_API_KEY}:${SERVICE_OWNER_API_SECRET} \
        https://evaluation-dot-authlete.appspot.com/api/service/update/${SERVICE_API_KEY}
 ```
 
+
+## 2.6 Test Connection between Your Authentication Server and Authlete
+
+Make an authorization request again using the same procedure as described in
+"1.5 Make an Authorization Request". In the displayed authorization UI, input
+different strings to "Login ID" field and "Password" field, and then press
+"Authorize" button. If your authentication server responded to an authentication
+callback request from Authlete, you will see an error message, "Login ID and/or
+password are wrong."
+
+
 <hr>
 # License
 
