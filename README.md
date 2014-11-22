@@ -34,8 +34,8 @@ of your service.
 Execute the following command to download this source.
 
 ```sh
-git clone http://github.com/authlete/authlete-ruby-quick-start.git
-cd authlete-ruby-quick-start
+$ git clone http://github.com/authlete/authlete-ruby-quick-start.git
+$ cd authlete-ruby-quick-start
 ```
 
 
@@ -47,10 +47,10 @@ line must be replaced with the values of apiKey and apiSecret in
 service-owner.json.
 
 ```sh
-curl -v --user ${SERVICE_OWNER_API_KEY}:${SERVICE_OWNER_API_SECRET} \
-     -H "Content-Type:application/json;charset=UTF-8" \
-     -d @service-original.json -o service.json \
-     https://evaluation-dot-authlete.appspot.com/api/service/create
+$ curl -v --user ${SERVICE_OWNER_API_KEY}:${SERVICE_OWNER_API_SECRET} \
+       -H "Content-Type:application/json;charset=UTF-8" \
+       -d @service-original.json -o service.json \
+       https://evaluation-dot-authlete.appspot.com/api/service/create
 ```
 
 Note: The response from Authlete API may take a long time (a few tens of
@@ -65,10 +65,10 @@ line must be replaced with the values of apiKey and apiSecret in
 service.json.
 
 ```sh
-curl -v --user ${SERVICE_API_KEY}:${SERVICE_API_SECRET} \
-     -H "Content-Type:application/json;charset=UTF-8" \
-     -d @client-original.json -o client.json \
-     https://evaluation-dot-authlete.appspot.com/api/client/create
+$ curl -v --user ${SERVICE_API_KEY}:${SERVICE_API_SECRET} \
+       -H "Content-Type:application/json;charset=UTF-8" \
+       -d @client-original.json -o client.json \
+       https://evaluation-dot-authlete.appspot.com/api/client/create
 ```
 
 
@@ -156,34 +156,117 @@ authenticate end-users.
 Execute the following command to install the [authlete gem](https://rubygems.org/gems/authlete).
 
 ```sh
-gem install authlete
+$ gem install authlete
 ```
 
 
-## 2.2
+## 2.2 Start an Authentication Server
 
 Execute the following command to start a sample authentication server which
 implements an *authentication callback endpoint*.
 
 ```sh
-rackup --port 9000 authentication-server.ru &
+$ rackup --port 9000 authentication-server.ru &
 ```
 
 
-## 2.3
+## 2.3 Make an Authentication Callback Request
 
-Make an authentication request to test the authentication server.
+Make an authentication callback request to test the authentication server.
 
 ```sh
-curl -v --user authentication-api-key:authentication-api-secret \
-     -H 'Content-Type:application/json;charset=UTF-8' \
-     -d authentication-request.json \
-     http://localhost:9000/authentication
+$ curl -v --user authentication-api-key:authentication-api-secret \
+       -H 'Content-Type:application/json;charset=UTF-8' \
+       -d @authentication-request.json \
+       http://localhost:9000/authentication
 ```
 
+On success, you will get a response show below.
 
-TBW
+```js
+{
+  "authenticated": true,
+  "subject": "user",
+  "claims": "{\"given_name\":\"user\"}"
+}
+```
 
+The authentication callback request that you made just now by the curl
+command simulates a request from Authlete, and the response in JSON format
+shown above is an example of authentication callback responses that your
+authentication server is supposed to build.
+
+Details about the requirements on an authentication callback endpoint
+are described soon later.
+
+
+## 2.4 Make an Authentication Server Public
+
+Your implementation of an authentication callback endpoint must be
+accessible from Authlete. This means that you have to put your authentication
+server on a machine which is publicly accessible via the Internet. However,
+it is cumbersome for testing purposes. So, let's use [Localtunnel]
+(http://localtunnel.me/) for now. *"Localtunnel will assign you a unique
+publicly accessible url that will proxy all requests to your locally running
+webserver."*
+
+Install Localtunnel
+
+```sh
+$ npm install -g localtunnel
+```
+
+and then start Localtunnel for your authentication server which is running
+on the port number 9000.
+
+```sh
+$ lt --port 9000
+your url is: https://monmcbvmqj.localtunnel.me
+```
+
+On success, lt command reports a URL that has been assigned. In the above
+example, `https://monmcbvmqj.localtunnel.me` is the URL.
+
+Make an authentication call request to the proxy.
+
+```sh
+$ curl -v --user authentication-api-key:authentication-api-secret \
+       -H 'Content-Type:application/json;charset=UTF-8' \
+       -d @authentication-request.json \
+       https://monmcbvmqj.localtunnel.me/authentication
+```
+
+On success, you will get the same JSON response as illustrated in the
+previous section.
+
+
+## 2.5 Register Your Authentication Callback Endpoint
+
+You need to tell Authlete where your authentication callback endpoint is.
+Open service.json with a text editor and change the value of
+authenticationCallbackEndpoint. To be concrete, replace
+
+```js
+"authenticationCallbackEndpoint":
+  "https://evaluation-dot-authlete.appspot.com/api/mock/authentication",
+```
+
+with
+
+```js
+"authenticationCallbackEndpoint":
+  "https://monmcbvmqj.localtunnel.me/authentication",
+```
+
+After saving service.json, update the metadata of your service by calling
+Authlete's /service/update API.
+
+```sh
+$ curl -v --user ${SERVICE_OWNER_API_KEY}:${SERVICE_OWNER_API_SECRET} \
+       -H "Content-Type:application/json;charset=UTF-8" \
+       -d @service.json \
+       https://evaluation-dot-authlete.appspot.com/api/service/update/${SERVICE_API_KEY}
+```
 
 <hr>
 # License
