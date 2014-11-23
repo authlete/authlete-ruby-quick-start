@@ -284,16 +284,16 @@ ID and the password are equal.
 After confirming the login failure, input the same strings to "Login ID" field
 and "Password" field and press "Authorize" button. This time, you will be
 authorized successfully. Complete the authorization code flow (= make a token
-request as described in "1.7 Make a Token Request") and get an access token.
-Write down the access token since it will be used later to test protected
-resouce endpoints.
+request as described in "1.7 Make a Token Request") and get an access token
+and a refresh token. Write down the access token and the refresh token since
+they will be used later to test protected resouce endpoints.
 
 
 ## 2.7 Requirements for Authentication Callback Endpoint
 
 ### 2.7.1 Input to Authentication Callback Endpoint
 
-* Basic Authentication
+* **Basic Authentication**
 
     If `authenticationCallbackEndpointApiKey` and `authenticationCallbackEndpointApiSecret`
     are registered, Authlete uses them to build the value of `Authorization`
@@ -302,15 +302,15 @@ resouce endpoints.
     presented API key and API secret via Basic Authentication are equal to
     the registered ones. This is highly recommended.
 
-* HTTP method
+* **HTTP method**
 
     `POST` method.
 
-* Content-Type
+* **Content-Type**
 
     `application/json`
 
-* Data Format
+* **Data Format**
 
     The entity body of an authentication callback request is JSON. The properties
     contained in the JSON are `serviceApiKey`, `clientId`, `id`, `password`,
@@ -350,16 +350,16 @@ resouce endpoints.
 
 ### 2.7.2 Output from Authentication Callback Endpoint
 
-* Content-Type
+* **Content-Type**
 
     `application/json;charset=UTF-8`
 
-* Recommended HTTP headers
+* **Recommended HTTP headers**
 
     `Cache-Control: no-store`<br>
     `Pragram: no-cache`
 
-* Data Format
+* **Data Format**
 
     The entity body of an authentication callback response must be JSON.
     The properties expected to be contained in the JSON are `authenticated`,
@@ -411,6 +411,89 @@ on Sinatra may be better to look into.
 
 <h4>
 # 3. Protected Resource Endpoint
+
+The primary reason for people to want to implement OAuth 2.0 is to allow
+third-party client applications to access their services with limited
+privileges. In that sense, it can be said that the main goal of OAuth 2.0
+implementation is to provide endpoints (Web APIs) through which client
+applications can access resources which are hosted on a service.
+
+A endpoint (Web API) which provides access to a resource in a protected
+mannter is called a "protected resource endpoint", and a server which
+provides protected resource endpoints is called a "resource server".
+
+
+## 3.1 Start a Resource Server
+
+Execute the following command to start a sample implementation of a
+resource server.
+
+```sh
+$ ./resource-server-sinatra.rb
+```
+
+
+## 3.2 Access Protected Resource Endpoints
+
+The resource server provides two protected resource endpoints. They are
+`/me` and `/saying`. Both accept `GET` requests and return JSON.
+
+`/me` returns just the value of the subject which is associated with the
+presented access token. Execute the following command to call `/me`.
+Replace ${ACCESS_TOKEN} in the command line with the access token that
+you have obtained in "2.6 Test Connection between Your Authentication
+Server and Authlete".
+
+```sh
+$ curl -v "http://localhost:4567/me?access_token=${ACCESS_TOKEN}"
+```
+
+On success, you will get a response like below.
+
+```js
+{"subject":"abc"}
+```
+
+`/saying` returns a saying randomly. Type the following
+
+```sh
+$ curl -v "http://localhost:4567/saying?access_token=${ACCESS_TOKEN}"
+```
+
+and you will get a saying.
+
+```js
+{"person":"Albert Einstein","saying":"A person who never made a mistake never tried anything new."}
+```
+
+
+## 3.3 Refreshing an Access Token
+
+If the access token you specified has expired but the refresh token
+which was issued along with the access token is still valid, you will
+get a response like below.
+
+```js
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer error="invalid_token",
+  error_description="[A065301] The access token has expired but it can be refreshed
+  using the corresponding refresh token.",
+  error_uri="https://www.authlete.com/authlete_web_api_result_codes.html#A065301",
+  scope="profile"
+```
+
+In this case, you can get a new access token by presenting the refresh
+token to the token endpoint.
+
+```sh
+$ curl -v https://evaluation-dot-authlete.appspot.com/api/auth/token/direct/${SERVICE_API_KEY} \
+       -d grant_type=refresh_token \
+       -d refresh_token=${REFRESH_TOKEN} \
+       -d client_id=${CLIENT_ID}
+```
+
+
+## 3.4 Access Token Introspection
 
 TBW
 
