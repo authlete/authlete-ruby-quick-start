@@ -433,6 +433,8 @@ Execute the following command to start a sample implementation of a
 resource server.
 
 ```sh
+$ export SERVICE_API_KEY=${SERVICE_API_KEY}
+$ export SERVICE_API_SECRET=${SERVICE_API_SECRET}
 $ ./resource-server-sinatra.rb
 ```
 
