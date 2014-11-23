@@ -457,7 +457,7 @@ On success, you will get a response like below.
 `/saying` returns a saying randomly. Type the following
 
 ```sh
-$ curl -v "http://localhost:4567/saying?access_token=${ACCESS_TOKEN}"
+$ curl -v -H "Authorization: Bearer ${ACCESS_TOKEN}" http://localhost:4567/saying
 ```
 
 and you will get a saying.
@@ -465,6 +465,11 @@ and you will get a saying.
 ```js
 {"person":"Albert Einstein","saying":"A person who never made a mistake never tried anything new."}
 ```
+
+The above examples shows two different means to pass an access token to
+a protected resource endpoint. One is `access_token` query parameter and
+the other is `Authorization` header. These are standard means defined in
+[RFC 6750](http://tools.ietf.org/html/rfc6750) (Bearer Token Usage).
 
 
 ## 3.3 Refreshing an Access Token
@@ -494,6 +499,95 @@ $ curl -v https://evaluation-dot-authlete.appspot.com/api/auth/token/direct/${SE
 
 
 ## 3.4 Access Token Introspection
+
+The first step that a protected resource endpoint has to perform is to check
+whether the access token presented by a client application is valid. 'Valid'
+here means that the access token satisfies the following conditions.
+
+1. Exists
+2. Has not expired
+3. Covers required scopes (= permissions) to access the said protected resource
+4. Is associated with a proper subject
+
+Authlete provides an API to check whether an access token satisfies these conditions.
+It is [/auth/introspection]
+(https://www.authlete.com/authlete_web_apis_introspection.html#auth_introspection)
+API. The API takes one mandatory request parameter `token` to specify the value of
+an access token, and two optional request parameters `scopes` and `subject` to
+specify required scopes and subject, respectively.
+
+The example below checks whether an access token exists, has not expired, covers
+`profile` and `saying` scopes and is associated with `abc`.
+
+```sh
+$ curl -v --user ${SERVICE_API_KEY}:${SERVICE_API_SECRET} \
+       https://evaluation-dot-authlete.appspot.com/api/auth/introspection \
+       -d token=${ACCESS_TOKEN} \
+       -d scopes=profile+saying \
+       -d subject=abc
+```
+
+When the access token is valid, the API returns a response like below. `"action": "OK"`
+indicates that the access token is valid.
+
+```js
+{
+  "type": "introspectionResponse",
+  "resultCode": "A056001",
+  "resultMessage": "[A056001] The access token is valid.",
+  "action": "OK",
+  "clientId": 78247751934,
+  "existent": true,
+  "refreshable": true,
+  "responseContent": "Bearer error=\"invalid_request\"",
+  "scopes": ["profile", "saying"],
+  "subject": "abc",
+  "sufficient": true,
+  "usable": true
+}
+```
+
+On the other hand, for example, if the access token does not cover a required scope,
+a response will look like the following. Note that `action` is `FORBIDDEN` and
+`sufficient` is `false`.
+
+```js
+{
+  "type": "introspectionResponse",
+  "resultCode": "A064302",
+  "resultMessage": "[A064302] The access token does not cover the required scope 'unknown'.",
+  "action": "FORBIDDEN",
+  "clientId": 78247751934,
+  "existent": true,
+  "refreshable": true,
+  "responseContent": "Bearer error=\"insufficient_scope\",error_description=\"[A064302] The access token does not cover the required scope 'unknown'.\",error_uri=\"https://www.aut
+hlete.com/authlete_web_api_result_codes.html#A064302\",scope=\"saying unknown profile\"",
+  "scopes": ["profile", "saying"],
+  "subject": "abc",
+  "sufficient": false,
+  "usable": true
+}
+```
+
+You may have noticed that the value of `responseContent` is lengthy and seems to follow
+some kind of technical specifications. As you may have guessed, `responseContent` can be
+used as the value of `WWW-Authenticate` HTTP header in the response to the client
+application. To be specific, your protected resource endpoint can generate an error
+response like below which satisfies the requirements of RFC 6750.
+
+```js
+HTTP/1.1 403 Forbidden
+WWW-Authenticate: {responseContent}
+Cache-Control: no-store
+Pragma: no-cache
+```
+
+See [/auth/introspection API document]
+(https://www.authlete.com/authlete_web_apis_introspection.html#auth_introspection)
+for details about what response you should return to a client application.
+
+
+## 3.5 Authlete Library
 
 TBW
 
