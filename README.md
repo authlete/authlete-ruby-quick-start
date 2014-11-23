@@ -14,6 +14,10 @@ the [authorization endpoint](https://tools.ietf.org/html/rfc6749#section-3.1)
 and the [token endpoint](https://tools.ietf.org/html/rfc6749#section-3.2)
 of your service.
 
+By trying the steps described in this README, you can cover the three
+roles that people (unconsciously) expect an OAuth 2.0 server to have,
+that is, **authentication**, **authorization** and **resource management**.
+
 
 <hr>
 # 1. Set Up Service and Client Application
@@ -587,9 +591,90 @@ See [/auth/introspection API document]
 for details about what response you should return to a client application.
 
 
-## 3.5 Authlete Library
+## 3.5 Access Token Introspection by Authlete Library
 
-TBW
+There exists Ruby gem ([authlete-ruby-gem](https://github.com/authlete/authlete-ruby-gem/))
+for Authlete Web APIs. With the library, access token introspection can be
+written as follows.
+
+```ruby
+# Create an Authlete client.
+client = Authlete::Client.new(
+  :host               => Authlete::Host::EVALUATION,
+  :service_api_key    => $SERVICE_API_KEY,
+  :service_api_secret => $SERVICE_API_SECRET
+)
+
+# An access token to introspect.
+access_token = 'Fs8YUaWbpBxDdYRXUvN-rQ0Mnq7lxrNq3no5zP-L4R0'
+
+# Optional conditions you require the access token to satisfy.
+scopes  = ['profile']
+subject = 'abc'
+
+# Introspect the access token and check the validity.
+result = client.introspect(access_token, scopes, subject)
+
+# Is the access token valid?
+valid = result.action == 'OK'
+```
+
+The above code snippet is straightforward. The first mandatory argument of
+`introspect` method is an access token to introspect. The second and the
+third optional arguments are scopes and a subject. `introspect` method
+returns an instance of `Authlete::Response::IntrospectionResponse`.
+
+`Authlete::Client` has another method named `protect_resource` which wraps
+`introspect` method. The first argument of `introspect` method is an
+instance of [Rack Request](http://www.rubydoc.info/gems/rack/Rack/Request)
+instead of an access token. The second and the third arguments are the same
+as the ones of `introspect` method. `protect_resource` method extracts an
+access token from the given request and then calls `introspect` method.
+See the source code of `resource-server-sinatra.rb` for example usages of
+`protect_resource` method.
+
+
+# Conclusion
+
+In a narrow sense, an OAuth server is a server for **authorization**.
+In a broad sense, people unconsciously expect the following three roles
+when they refer to an OAuth server.
+
+1. **Authentication**
+2. **Authorization**
+3. **Resource Management**
+
+**Authentication** deals with information about *"who one is"*. Solutions
+related to user management belong to this area. You have implemented the
+authentication mechanism by implementing **authentication callback
+endpoint** in the chapter "2. Authentication Callback Endpoint".
+
+**Authorization** deals with information about *"who grants what permissions
+to whom"*. [RFC 6749](http://tools.ietf.org/html/rfc6749) (OAuth 2.0) is
+the industry standard for authorization. You have completed this by registering
+the definition of your service to Authlete in the section "1.3 Register Your
+Service". It should be noted that you did not have to implement the
+[authorization endpoint](http://tools.ietf.org/html/rfc6749#section-3.1) and
+the [token endpoint](http://tools.ietf.org/html/rfc6749#section-3.2) which
+are required by RFC 6749. Authlete provides configurable implementation of
+these endpoints that satisfy the requirements of RFC 6749, [OpenID Connect
+Core 1.0](http://openid.net/specs/openid-connect-core-1_0.html) and other
+related specifications on behalf of you.
+
+**Resource Management** deals with user data. Solutions to host data are
+related to this area. In the context of OAuth 2.0, endpoints (Web APIs)
+that provide access to resources are called "protected resource endpoints".
+[RFC 6750](http://tools.ietf.org/html/rfc6750) lists three ways to present
+an access token to a protected resource endpoint. Resource management was
+covered in the chapter "3. Protected Resource Endpoint". Authlete provides
+[/auth/introspection API]
+(https://www.authlete.com/authlete_web_apis_introspection.html#auth_introspection)
+to validate an access token and the API helps you to implement protected
+resource endpoints of your service.
+
+Authlete is a BaaS (Backend-as-a-Service) for authorization. It helps you
+to implement OAuth 2.0 and OpenID Connect functionalities quickly. Visit
+[our site](https://www.authlete.com/) for details.
 
 
 <hr>
