@@ -14,9 +14,10 @@ the [authorization endpoint](https://tools.ietf.org/html/rfc6749#section-3.1)
 and the [token endpoint](https://tools.ietf.org/html/rfc6749#section-3.2)
 of your service.
 
-By trying the steps described in this README, you can cover the three
-roles that people (unconsciously) expect an OAuth 2.0 server to have,
-that is, **authentication**, **authorization** and **resource management**.
+By trying the steps described in this README, you can cover the four
+roles that people consciously or unconsciously expect an OAuth 2.0
+server to have, that is, **authentication**, **authorization**,
+**resource management** and **client management**.
 
 
 <hr>
@@ -639,12 +640,13 @@ See the source code of `resource-server-sinatra.rb` for example usages of
 # Conclusion
 
 In a narrow sense, an OAuth server is a server for **authorization**.
-In a broad sense, people unconsciously expect the following three roles
-when they refer to an OAuth server.
+In a broad sense, people consciously or unconsciously expect the following
+four roles when they refer to an OAuth server.
 
 1. **Authentication**
 2. **Authorization**
 3. **Resource Management**
+4. **Client Management**
 
 **Authentication** deals with information about *"who one is"*. Solutions
 related to user management belong to this area. You have implemented the
@@ -673,6 +675,14 @@ covered in the chapter "3. Protected Resource Endpoint". Authlete provides
 (https://www.authlete.com/authlete_web_apis_introspection.html#auth_introspection)
 to validate an access token and the API helps you to implement protected
 resource endpoints of your service.
+
+**Client Management** deals with meta data of third-party client applications.
+Client IDs are generated and issued by a service and they are used when
+client applications access OAuth 2.0 endpoints. Authlete provides [/client/*
+APIs](https://www.authlete.com/authlete_web_apis_client.html) with which you
+can manage meta data of client applications. You used [/client/create API]
+(https://www.authlete.com/authlete_web_apis_client.html#client_create) in the
+section "1.4 Register Your Client Application".
 
 Authlete is a BaaS (Backend-as-a-Service) for authorization. It helps you
 to implement OAuth 2.0 and OpenID Connect functionalities quickly. Visit
