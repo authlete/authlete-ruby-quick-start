@@ -14,6 +14,11 @@ the [authorization endpoint](https://tools.ietf.org/html/rfc6749#section-3.1)
 and the [token endpoint](https://tools.ietf.org/html/rfc6749#section-3.2)
 of your service.
 
+By trying the steps described in this README, you can cover the four
+roles that people consciously or unconsciously expect an OAuth 2.0
+server to have, that is, **authentication**, **authorization**,
+**resource management** and **client management**.
+
 
 <hr>
 # 1. Set Up Service and Client Application
@@ -284,16 +289,16 @@ ID and the password are equal.
 After confirming the login failure, input the same strings to "Login ID" field
 and "Password" field and press "Authorize" button. This time, you will be
 authorized successfully. Complete the authorization code flow (= make a token
-request as described in "1.7 Make a Token Request") and get an access token.
-Write down the access token since it will be used later to test protected
-resouce endpoints.
+request as described in "1.7 Make a Token Request") and get an access token
+and a refresh token. Write down the access token and the refresh token since
+they will be used later to test protected resouce endpoints.
 
 
 ## 2.7 Requirements for Authentication Callback Endpoint
 
 ### 2.7.1 Input to Authentication Callback Endpoint
 
-* Basic Authentication
+* **Basic Authentication**
 
     If `authenticationCallbackEndpointApiKey` and `authenticationCallbackEndpointApiSecret`
     are registered, Authlete uses them to build the value of `Authorization`
@@ -302,15 +307,15 @@ resouce endpoints.
     presented API key and API secret via Basic Authentication are equal to
     the registered ones. This is highly recommended.
 
-* HTTP method
+* **HTTP method**
 
     `POST` method.
 
-* Content-Type
+* **Content-Type**
 
     `application/json`
 
-* Data Format
+* **Data Format**
 
     The entity body of an authentication callback request is JSON. The properties
     contained in the JSON are `serviceApiKey`, `clientId`, `id`, `password`,
@@ -350,16 +355,16 @@ resouce endpoints.
 
 ### 2.7.2 Output from Authentication Callback Endpoint
 
-* Content-Type
+* **Content-Type**
 
     `application/json;charset=UTF-8`
 
-* Recommended HTTP headers
+* **Recommended HTTP headers**
 
     `Cache-Control: no-store`<br>
     `Pragram: no-cache`
 
-* Data Format
+* **Data Format**
 
     The entity body of an authentication callback response must be JSON.
     The properties expected to be contained in the JSON are `authenticated`,
@@ -412,7 +417,276 @@ on Sinatra may be better to look into.
 <h4>
 # 3. Protected Resource Endpoint
 
-TBW
+The primary reason for people to want to implement OAuth 2.0 is to allow
+third-party client applications to access their services with limited
+privileges. In that sense, it can be said that the main goal of OAuth 2.0
+implementation is to provide endpoints (Web APIs) through which client
+applications can access resources which are hosted on a service.
+
+A endpoint (Web API) which provides access to a resource in a protected
+mannter is called a "protected resource endpoint", and a server which
+provides protected resource endpoints is called a "resource server".
+
+
+## 3.1 Start a Resource Server
+
+Execute the following command to start a sample implementation of a
+resource server.
+
+```sh
+$ export SERVICE_API_KEY=${SERVICE_API_KEY}
+$ export SERVICE_API_SECRET=${SERVICE_API_SECRET}
+$ ./resource-server-sinatra.rb
+```
+
+
+## 3.2 Access Protected Resource Endpoints
+
+The resource server provides two protected resource endpoints. They are
+`/me` and `/saying`. Both accept `GET` requests and return JSON.
+
+`/me` returns just the value of the subject which is associated with the
+presented access token. Execute the following command to call `/me`.
+Replace ${ACCESS_TOKEN} in the command line with the access token that
+you have obtained in "2.6 Test Connection between Your Authentication
+Server and Authlete".
+
+```sh
+$ curl -v "http://localhost:4567/me?access_token=${ACCESS_TOKEN}"
+```
+
+On success, you will get a response like below.
+
+```js
+{"subject":"abc"}
+```
+
+`/saying` returns a saying randomly. Type the following
+
+```sh
+$ curl -v -H "Authorization: Bearer ${ACCESS_TOKEN}" http://localhost:4567/saying
+```
+
+and you will get a saying.
+
+```js
+{"person":"Albert Einstein","saying":"A person who never made a mistake never tried anything new."}
+```
+
+The above examples shows two different means to pass an access token to
+a protected resource endpoint. One is `access_token` query parameter and
+the other is `Authorization` header. These are standard means defined in
+[RFC 6750](http://tools.ietf.org/html/rfc6750) (Bearer Token Usage).
+
+
+## 3.3 Refreshing an Access Token
+
+If the access token you specified has expired but the refresh token
+which was issued along with the access token is still valid, you will
+get a response like below.
+
+```js
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer error="invalid_token",
+  error_description="[A065301] The access token has expired but it can be refreshed
+  using the corresponding refresh token.",
+  error_uri="https://www.authlete.com/authlete_web_api_result_codes.html#A065301",
+  scope="profile"
+```
+
+In this case, you can get a new access token by presenting the refresh
+token to the token endpoint.
+
+```sh
+$ curl -v https://evaluation-dot-authlete.appspot.com/api/auth/token/direct/${SERVICE_API_KEY} \
+       -d grant_type=refresh_token \
+       -d refresh_token=${REFRESH_TOKEN} \
+       -d client_id=${CLIENT_ID}
+```
+
+
+## 3.4 Access Token Introspection
+
+The first step that a protected resource endpoint has to perform is to check
+whether the access token presented by a client application is valid. 'Valid'
+here means that the access token satisfies the following conditions.
+
+1. Exists
+2. Has not expired
+3. Covers required scopes (= permissions) to access the said protected resource
+4. Is associated with a proper subject
+
+Authlete provides an API to check whether an access token satisfies these conditions.
+It is [/auth/introspection]
+(https://www.authlete.com/authlete_web_apis_introspection.html#auth_introspection)
+API. The API takes one mandatory request parameter `token` to specify the value of
+an access token, and two optional request parameters `scopes` and `subject` to
+specify required scopes and subject, respectively.
+
+The example below checks whether an access token exists, has not expired, covers
+`profile` and `saying` scopes and is associated with `abc`.
+
+```sh
+$ curl -v --user ${SERVICE_API_KEY}:${SERVICE_API_SECRET} \
+       https://evaluation-dot-authlete.appspot.com/api/auth/introspection \
+       -d token=${ACCESS_TOKEN} \
+       -d scopes=profile+saying \
+       -d subject=abc
+```
+
+When the access token is valid, the API returns a response like below. `"action": "OK"`
+indicates that the access token is valid.
+
+```js
+{
+  "type": "introspectionResponse",
+  "resultCode": "A056001",
+  "resultMessage": "[A056001] The access token is valid.",
+  "action": "OK",
+  "clientId": 78247751934,
+  "existent": true,
+  "refreshable": true,
+  "responseContent": "Bearer error=\"invalid_request\"",
+  "scopes": ["profile", "saying"],
+  "subject": "abc",
+  "sufficient": true,
+  "usable": true
+}
+```
+
+On the other hand, for example, if the access token does not cover a required scope,
+a response will look like the following. Note that `action` is `FORBIDDEN` and
+`sufficient` is `false`.
+
+```js
+{
+  "type": "introspectionResponse",
+  "resultCode": "A064302",
+  "resultMessage": "[A064302] The access token does not cover the required scope 'unknown'.",
+  "action": "FORBIDDEN",
+  "clientId": 78247751934,
+  "existent": true,
+  "refreshable": true,
+  "responseContent": "Bearer error=\"insufficient_scope\",error_description=\"[A064302] The access token does not cover the required scope 'unknown'.\",error_uri=\"https://www.aut
+hlete.com/authlete_web_api_result_codes.html#A064302\",scope=\"saying unknown profile\"",
+  "scopes": ["profile", "saying"],
+  "subject": "abc",
+  "sufficient": false,
+  "usable": true
+}
+```
+
+You may have noticed that the value of `responseContent` is lengthy and seems to follow
+some kind of technical specifications. As you may have guessed, `responseContent` can be
+used as the value of `WWW-Authenticate` HTTP header in the response to the client
+application. To be specific, your protected resource endpoint can generate an error
+response like below which satisfies the requirements of RFC 6750.
+
+```js
+HTTP/1.1 403 Forbidden
+WWW-Authenticate: {responseContent}
+Cache-Control: no-store
+Pragma: no-cache
+```
+
+See [/auth/introspection API document]
+(https://www.authlete.com/authlete_web_apis_introspection.html#auth_introspection)
+for details about what response you should return to a client application.
+
+
+## 3.5 Access Token Introspection by Authlete Library
+
+There exists Ruby gem ([authlete-ruby-gem](https://github.com/authlete/authlete-ruby-gem/))
+for Authlete Web APIs. With the library, access token introspection can be
+written as follows.
+
+```ruby
+# Create an Authlete client.
+client = Authlete::Client.new(
+  :host               => Authlete::Host::EVALUATION,
+  :service_api_key    => $SERVICE_API_KEY,
+  :service_api_secret => $SERVICE_API_SECRET
+)
+
+# An access token to introspect.
+access_token = 'Fs8YUaWbpBxDdYRXUvN-rQ0Mnq7lxrNq3no5zP-L4R0'
+
+# Optional conditions you require the access token to satisfy.
+scopes  = ['profile']
+subject = 'abc'
+
+# Introspect the access token and check the validity.
+result = client.introspect(access_token, scopes, subject)
+
+# Is the access token valid?
+valid = result.action == 'OK'
+```
+
+The above code snippet is straightforward. The first mandatory argument of
+`introspect` method is an access token to introspect. The second and the
+third optional arguments are scopes and a subject. `introspect` method
+returns an instance of `Authlete::Response::IntrospectionResponse`.
+
+`Authlete::Client` has another method named `protect_resource` which wraps
+`introspect` method. The first argument of `introspect` method is an
+instance of [Rack Request](http://www.rubydoc.info/gems/rack/Rack/Request)
+instead of an access token. The second and the third arguments are the same
+as the ones of `introspect` method. `protect_resource` method extracts an
+access token from the given request and then calls `introspect` method.
+See the source code of `resource-server-sinatra.rb` for example usages of
+`protect_resource` method.
+
+
+# Conclusion
+
+In a narrow sense, an OAuth server is a server for **authorization**.
+In a broad sense, people consciously or unconsciously expect the following
+four roles when they refer to an OAuth server.
+
+1. **Authentication**
+2. **Authorization**
+3. **Resource Management**
+4. **Client Management**
+
+**Authentication** deals with information about *"who one is"*. Solutions
+related to user management belong to this area. You have implemented the
+authentication mechanism by implementing **authentication callback
+endpoint** in the chapter "2. Authentication Callback Endpoint".
+
+**Authorization** deals with information about *"who grants what permissions
+to whom"*. [RFC 6749](http://tools.ietf.org/html/rfc6749) (OAuth 2.0) is
+the industry standard for authorization. You have completed this by registering
+the definition of your service to Authlete in the section "1.3 Register Your
+Service". It should be noted that you did not have to implement the
+[authorization endpoint](http://tools.ietf.org/html/rfc6749#section-3.1) and
+the [token endpoint](http://tools.ietf.org/html/rfc6749#section-3.2) which
+are required by RFC 6749. Authlete provides configurable implementation of
+these endpoints that satisfy the requirements of RFC 6749, [OpenID Connect
+Core 1.0](http://openid.net/specs/openid-connect-core-1_0.html) and other
+related specifications on behalf of you.
+
+**Resource Management** deals with user data. Solutions to host data are
+related to this area. In the context of OAuth 2.0, endpoints (Web APIs)
+that provide access to resources are called "protected resource endpoints".
+[RFC 6750](http://tools.ietf.org/html/rfc6750) lists three ways to present
+an access token to a protected resource endpoint. Resource management was
+covered in the chapter "3. Protected Resource Endpoint". Authlete provides
+[/auth/introspection API]
+(https://www.authlete.com/authlete_web_apis_introspection.html#auth_introspection)
+to validate an access token and the API helps you to implement protected
+resource endpoints of your service.
+
+**Client Management** deals with meta data of third-party client applications.
+Client IDs are generated and issued by a service and they are used when
+client applications access OAuth 2.0 endpoints. Authlete provides [/client/*
+APIs](https://www.authlete.com/authlete_web_apis_client.html) with which you
+can manage meta data of client applications. You used [/client/create API]
+(https://www.authlete.com/authlete_web_apis_client.html#client_create) in the
+section "1.4 Register Your Client Application".
+
+Authlete is a BaaS (Backend-as-a-Service) for authorization. It helps you
+to implement OAuth 2.0 and OpenID Connect functionalities quickly. Visit
+[our site](https://www.authlete.com/) for details.
 
 
 <hr>
