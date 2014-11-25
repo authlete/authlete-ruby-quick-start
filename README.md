@@ -291,7 +291,7 @@ and "Password" field and press "Authorize" button. This time, you will be
 authorized successfully. Complete the authorization code flow (= make a token
 request as described in "1.7 Make a Token Request") and get an access token
 and a refresh token. Write down the access token and the refresh token since
-they will be used later to test protected resouce endpoints.
+they will be used later to test protected resource endpoints.
 
 
 ## 2.7 Requirements for Authentication Callback Endpoint
@@ -424,7 +424,7 @@ implementation is to provide endpoints (Web APIs) through which client
 applications can access resources which are hosted on a service.
 
 A endpoint (Web API) which provides access to a resource in a protected
-mannter is called a "protected resource endpoint", and a server which
+manner is called a "protected resource endpoint", and a server which
 provides protected resource endpoints is called a "resource server".
 
 
