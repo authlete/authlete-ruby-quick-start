@@ -1,8 +1,5 @@
 {
   "id": "user",
   "password": "user",
-  "claims": [
-    "given_name",
-    "family_name"
-  ]
+  "claims": [ "given_name" ]
 }
