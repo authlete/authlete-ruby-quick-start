@@ -232,7 +232,7 @@ your url is: https://monmcbvmqj.localtunnel.me
 On success, `lt` command reports a URL that has been assigned. In the above
 example, `https://monmcbvmqj.localtunnel.me` is the URL.
 
-Make an authentication call request to the proxy.
+Make an authentication callback request to the proxy.
 
 ```sh
 $ curl -v --user authentication-api-key:authentication-api-secret \
@@ -288,7 +288,7 @@ ID and the password are equal.
 
 After confirming the login failure, input the same strings to "Login ID" field
 and "Password" field and press "Authorize" button. This time, you will be
-authorized successfully. Complete the authorization code flow (= make a token
+authenticated successfully. Complete the authorization code flow (= make a token
 request as described in "1.7 Make a Token Request") and get an access token
 and a refresh token. Write down the access token and the refresh token since
 they will be used later to test protected resource endpoints.
@@ -410,18 +410,18 @@ In this repository, two authentication server implementations are included.
 One is `authentication-server.rb` which you have used so far. The other is
 `authentication-server-sinatra.rb` which is a very simple implementation
 based on [Sinatra](http://www.sinatrarb.com/). If you want to grab the
-overall picture of authentication callback endpoint, the source code based
-on Sinatra may be better to look into.
+overall picture of authentication callback endpoint quickly, the source code
+based on Sinatra may be better to look into.
 
 
 <h4>
 # 3. Protected Resource Endpoint
 
-The primary reason for people to want to implement OAuth 2.0 is to allow
-third-party client applications to access their services with limited
-privileges. In that sense, it can be said that the main goal of OAuth 2.0
-implementation is to provide endpoints (Web APIs) through which client
-applications can access resources which are hosted on a service.
+The primary reason for people to want to implement OAuth 2.0 is that they
+wan to allow third-party client applications to access their services with
+limited privileges. In that sense, it can be said that the main goal of
+OAuth 2.0 implementation is to provide endpoints (Web APIs) through which
+client applications can access resources which are hosted on a service.
 
 A endpoint (Web API) which provides access to a resource in a protected
 manner is called a "protected resource endpoint", and a server which
@@ -628,7 +628,7 @@ third optional arguments are scopes and a subject. `introspect` method
 returns an instance of `Authlete::Response::IntrospectionResponse`.
 
 `Authlete::Client` has another method named `protect_resource` which wraps
-`introspect` method. The first argument of `introspect` method is an
+`introspect` method. The first argument of `protect_resource` method is an
 instance of [Rack Request](http://www.rubydoc.info/gems/rack/Rack/Request)
 instead of an access token. The second and the third arguments are the same
 as the ones of `introspect` method. `protect_resource` method extracts an
