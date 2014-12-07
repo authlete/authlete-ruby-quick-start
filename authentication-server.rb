@@ -15,6 +15,7 @@
 
 require 'authlete'
 require 'json'
+require_relative 'sns/facebook'
 
 
 # The API credentials to access the authentication callback endpoint.
@@ -38,9 +39,17 @@ class AuthenticationServer < Authlete::AuthenticationServer
   def authenticate_user(req)
     # This method is the main part of this authentication server.
 
-    # TODO: Support social login. The current implementation supports
-    #       only the simple 'ID & Password' authentication. Authlete
-    #       server has not supported social login yet.
+    # If the end-user performed social login.
+    if req.sns != nil
+      # This demo implementation always regards the end-user as
+      # valid when he/she was authenticated by an SNS, and uses
+      # the subject of the end-user in the SNS as the subject of
+      # this service.
+      return req.id
+    end
+
+    # The end-user input his/her credentials to the input fields of
+    # the form which was displayed at the authorization endpoint.
 
     # This demo implementation regards the credentials of the end-user
     # as valid when the value of ID and that of password are equal.
@@ -64,6 +73,19 @@ class AuthenticationServer < Authlete::AuthenticationServer
     # contains the value of 'claims_locales' request parameter of the
     # authorization request which has triggered this authentication
     # callback request.
+
+    # If the end-user performed social login.
+    if req.sns != nil
+      # Collect claim values from the SNS using the access token.
+      # However, in normal cases, an authentication server has its
+      # own database which manages claim values of end-users.
+      case req.sns
+      when 'FACEBOOK'
+        return Sns::Facebook.collect_claims(req)
+      else
+        return nil
+      end
+    end
 
     # Hash for claim values.
     values = {}
