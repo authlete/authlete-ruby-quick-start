@@ -495,40 +495,96 @@ OpenID Connect.
 
 * **Data Format**
 
-    The entity body of an authentication callback request is JSON. The properties
-    contained in the JSON are `serviceApiKey`, `clientId`, `id`, `password`,
-    `claims` and `claimsLocales`. [AuthenticationCallbackRequest.java]
+    The entity body of an authentication callback request is JSON. The JSON
+    contains the properties listed below. [AuthenticationCallbackRequest.java]
     (https://github.com/authlete/authlete-java-common/blob/master/src/main/java/com/authlete/common/dto/AuthenticationCallbackRequest.java)
     in [authlete-java-common](https://github.com/authlete/authlete-java-common)
     represents the latest format. `AuthenticationCallbackRequest.rb` in
     [authlete gem](https://rubygems.org/gems/authlete) represents the format, too.
 
-    `serviceApiKey` is the API key of your service. `clientId` is the ID of
-    the client application which has triggered the authentication callback
-    request.
+    - `serviceApiKey`
 
-    `id` and `password` properties hold the values that the end-user input to
-    "Login ID" field and "Password" field in the authorization UI displayed at
-    the authorization endpoint. Basically, authentication should be performed
-    for these values.
+       The API key of your service.
 
-    `claims` is a string array which lists claims names (such as `given_name`)
-    requested by an authorization request. 'Claim' is a piece of information
-    about an end-user. Some standard claim names are defined in
-    "[5.1. Standard Claims](http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims)"
-    in [OpenID Connect Core 1.0](http://openid.net/specs/openid-connect-core-1_0.html).
-    You can list up claim names as the value of `supportedClaims` which your
-    service intends to support. Note that claim names may be followed by a locale
-    tag like `given_name#ja`. See "[5.2.  Claims Languages and Scripts]
-    (http://openid.net/specs/openid-connect-core-1_0.html#ClaimsLanguagesAndScripts)"
-    for details.
+    - `clientId`
 
-    `claimsLocales` is a string array which lists locale names. The values
-    come from `claims_locales` request parameter contained in the authorization
-    request which has triggered the authentication callback request. See
-    "[5.2.  Claims Languages and Scripts]
-    (http://openid.net/specs/openid-connect-core-1_0.html#ClaimsLanguagesAndScripts)"
-    for details.
+       The ID of the client application which has triggered the authentication
+       callback request.
+
+    - `id`
+
+       When `sns` is `null`, `id` is the value that the end-user input to the
+       "Login ID" field in the authorization UI displayed at the authorization
+       endpoint or the value of `username` request parameter to the token
+       endpoint when the flow is [Resource Owner Password Credentials Flow]
+       (https://tools.ietf.org/html/rfc6749#section-4.3).
+
+       Otherwise, when `sns` is not `null`, `id` is the value of the subject
+       (= unique identifier) of the end-user in the SNS.
+
+    - `password`
+
+       When `sns` is `null`, `password` is the value that the end-user input to
+       the "Password" field in the authorization UI displayed at the authorization
+       endpoint or the value of `password` request parameter to the token
+       endpoint when the flow is [Resource Owner Password Credentials Flow]
+       (https://tools.ietf.org/html/rfc6749#section-4.3).
+
+       Otherwise, when `sns` is not `null`, `passwor` has no meaning.
+
+    - `claims`
+
+       A string array which lists claims names (such as `given_name`) requested
+       by an authorization request. 'Claim' is a piece of information about an
+       end-user. Some standard claim names are defined in "[5.1. Standard Claims]
+       (http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims)"
+       in [OpenID Connect Core 1.0](http://openid.net/specs/openid-connect-core-1_0.html).
+
+       You can list up claim names as the value of `supportedClaims` which your
+       service intends to support. Note that claim names in the authentication
+       callback request may be followed by a locale tag like `given_name#ja`.
+       See "[5.2.  Claims Languages and Scripts]
+       (http://openid.net/specs/openid-connect-core-1_0.html#ClaimsLanguagesAndScripts)"
+       for details.
+
+    - `claimsLocales`
+
+       A string array which lists locale names. The values come from `claims_locales`
+       request parameter contained in the authorization request which has triggered
+       the authentication callback request. See "[5.2.  Claims Languages and Scripts]
+       (http://openid.net/specs/openid-connect-core-1_0.html#ClaimsLanguagesAndScripts)"
+       for details.
+
+    - `sns`
+
+       When the end-user performed social login, `sns` holds the name of the SNS
+       such as `FACEBOOK`.
+
+    - `accessToken`
+
+       When the end-user performed social login, `accessToken` holds the access token
+       which was issued from the token endpoint of the SNS.
+
+    - `refreshToken`
+
+       When the end-user performed social login, `refreshToken` holds the refresh token
+       which was issued from the token endpoint of the SNS. If the SNS has not issued
+       a refresh token, this property is `null`.
+
+    - `expiresIn`
+
+       When the end-user performed social login, `expiresIn` hold the duration of the
+       access token in seconds. If the SNS has not returned information about the
+       duration, this property is 0.
+
+    - `rawTokenResponse`
+
+       When the end-user performed social login, `rawTokenResponse` hold the content
+       of the response from the token endpoint of the SNS. Correct implementations of
+       token endpoints return 'application/json', so rawTokenResponse is formatted in
+       JSON. However, note that the token endpoint of Facebook returns data in the
+       format of 'application/x-www-url-encoded'. This is a violation against
+       [RFC 6749](https://tools.ietf.org/html/rfc6749) (OAuth 2.0).
 
 
 ### 2.8.2 Output from Authentication Callback Endpoint
