@@ -186,6 +186,15 @@ $ curl -v --user authentication-api-key:authentication-api-secret \
        http://localhost:9000/authentication
 ```
 
+```js
+// The content of authentication-request.json
+{
+  "id": "user",
+  "password": "user",
+  "claims": [ "given_name" ]
+}
+```
+
 On success, you will get a response show below.
 
 ```js
@@ -294,9 +303,44 @@ and a refresh token. Write down the access token and the refresh token since
 they will be used later to test protected resource endpoints.
 
 
-## 2.7 Requirements for Authentication Callback Endpoint
+## 2.7 Social Login
 
-### 2.7.1 Input to Authentication Callback Endpoint
+These days, many services delegate end-user authentication to external SNSes
+such as Facebook and Twitter. This mechanism is often called **social login**.
+In services which support social login, a login form is displayed with SNS icons.
+
+If your service provides end-users with a way to register their user accounts
+using their existing SNS accounts, it is natural that you think the login form
+displayed at the authorization endpoint should show SNS icons for social login.
+You can achieve this by adding two properties to your service's configuration.
+
+The properties are `supportedSnses` and `snsCredentials`. List SNSes in
+`supportedSnses` which you want to be displayed in the authorization UI and
+list pairs of SNS credentials (= API key and API secret) in `snsCredentials`.
+An example below results in that Facebook icon is displayed.
+
+```js
+  ......,
+  "supportedSnses": [
+    "FACEBOOK"
+  ],
+  "snsCredentials": [
+    {
+      "sns": "FACEBOOK",
+      "apiKey": "573550470352118",
+      "apiSecret": "eb1b052347931cf9a3752197ba422162"
+    }
+  ],
+```
+
+The resultant UI will look like the following figure.
+
+![Authorization UI](images/authorization-ui-with-sns-icons.png)
+
+
+## 2.8 Requirements for Authentication Callback Endpoint
+
+### 2.8.1 Input to Authentication Callback Endpoint
 
 * **Basic Authentication**
 
@@ -353,7 +397,7 @@ they will be used later to test protected resource endpoints.
     for details.
 
 
-### 2.7.2 Output from Authentication Callback Endpoint
+### 2.8.2 Output from Authentication Callback Endpoint
 
 * **Content-Type**
 
