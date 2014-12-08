@@ -445,6 +445,32 @@ endpoint (`https://evaluation-dot-authlete.appspot.com/api/auth/authorization/di
 
 ![ID token](images/id-token.png)
 
+#### ID Token
+
+You may be wondering what an ID token is. **ID token** is a data structure defined
+in [OpenID Connect Core 1.0](http://openid.net/specs/openid-connect-core-1_0.html).
+The excerpt below is the first paragraph of "[2. ID Token]
+(http://openid.net/specs/openid-connect-core-1_0.html#IDToken)" of the specification.
+
+> *The primary extension that OpenID Connect makes to OAuth 2.0 to
+> enable End-Users to be Authenticated is the ID Token data structure.
+> The ID Token is a security token that contains Claims about the
+> Authentication of an End-User by an Authorization Server when using
+> a Client, and potentially other requested Claims. The ID Token is
+> represented as a JSON Web Token (JWT) [JWT].*
+
+To put it simply, an ID token is a set of pieces of information about an end-user.
+
+It should be noted that if OAuth 2.0 server supports **OpenID Connect**, a client
+application can get basic profile information about an end-user through the OAuth
+2.0 authorization flow. What makes this possible is the architecure of OpenID
+Connect. See the [home page of OpenID Connect](http://openid.net/connect/) for
+details.
+
+It also should be noted that Authlete supports OpenID Connect. If you use Authlete,
+you don't have to read and implement the overwhelming specifications related to
+OpenID Connect.
+
 
 ## 2.8 Requirements for Authentication Callback Endpoint
 
