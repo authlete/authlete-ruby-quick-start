@@ -601,41 +601,50 @@ OpenID Connect.
 * **Data Format**
 
     The entity body of an authentication callback response must be JSON.
-    The properties expected to be contained in the JSON are `authenticated`,
-    `subject` and `claims`. [AuthenticationCallbackResponse.java]
+    The properties expected to be contained in the JSON are listed below.
+    [AuthenticationCallbackResponse.java]
     (https://github.com/authlete/authlete-java-common/blob/master/src/main/java/com/authlete/common/dto/AuthenticationCallbackResponse.java)
     in [authlete-java-common](https://github.com/authlete/authlete-java-common)
     represents the latest format. `AuthenticationCallbackResponse.rb` in
     [authlete gem](https://rubygems.org/gems/authlete) represents the format, too.
 
-    `authenticated` is the result of authentication. Set `true` when the
-    end-user was authenticated successfully.
+    - `authenticated`
 
-    `subject` is the unique identifier of the end-user in your service.
-    Note that the value of `subject` is not always equal to the value of
-    `id` in the authentication callback request. For example, your service
-    may look up an end-user when the given `id` represents an email address
-    if your service can identify an end-user from an email address. In such
-    a case, the value of `subject` will probably be different from `id`.
-    When `authenticated` is `false`, `subject` may remain `null`.
+       The result of authentication. Set `true` when the end-user was authenticated
+       successfully.
 
-    `claims` is a JSON string which contains pairs of claim name and claim
-    value. The following is an example which contains two pairs.
+    - `subject`
 
-    ```js
-    {
-      "given_name": "Takahiko",
-      "gender": "male"
-    }
-    ```
+       The unique identifier of the end-user in your service. Note that the value
+       of `subject` is not always equal to the value of `id` in the authentication
+       callback request. For example, your service may look up an end-user when
+       the given `id` represents an email address if your service can identify an
+       end-user from an email address. In such a case, the value of `subject` will
+       probably be different from `id`.
 
-    See "[5. Claims](http://openid.net/specs/openid-connect-core-1_0.html#Claims)"
-    for details about the format.
+       When `authenticated` is `false`, `subject` may remain `null`.
 
-    Claims values returned from an authentication callback endpoint are used
-    to generate an ID token. If values of requested claims are not available
-    at all or if you do not want to provide claim values, `claims` may remain
-    `null`.
+    - `claims`
+
+       A JSON string which contains pairs of claim name and claim value. The
+       following is an example which contains two pairs.
+
+       ```js
+       {
+         "given_name": "Takahiko",
+         "gender": "male"
+       }
+       ```
+
+       See "[5. Claims](http://openid.net/specs/openid-connect-core-1_0.html#Claims)"
+       for details about the format. Also, in `sns/facebook.rb`, you can find an
+       implementation to collect claim values from Facebook and format them in the
+       requested format.
+
+       Claims values returned from an authentication callback endpoint are used
+       to generate an ID token. If values of requested claims are not available
+       at all or if you do not want to provide claim values, `claims` may remain
+       `null`.
 
 
 ## 2.8 About Sample Implementations
