@@ -363,21 +363,51 @@ In Facebook, you can find a place to set redirect URIs by following
 
 ### 2.7.3 Social Login Flow
 
-When an end-user selects social login at the authorization endpoint of your
-service (`/api/auth/authorization/direct/{service-api-key}`), Authlete
-redirects the user agent to the authorization endpoint of the target SNS.
-For example, in the case of Facebook, the user agent is redirected to
-`https://www.facebook.com/dialog/oauth`.
+1. When an end-user selects social login at the authorization endpoint of your
+   service (`/api/auth/authorization/direct/{service-api-key}`), Authlete
+   redirects the user agent to the authorization endpoint of the target SNS.
+   For example, in the case of Facebook, the user agent is redirected to
+   `https://www.facebook.com/dialog/oauth`. This is the starting point of
+   an [authorization code flow](https://tools.ietf.org/html/rfc6749#section-4.1).
 
-The client application name that the end-user will see at the authorization
-endpoint of the SNS is not the client application that has accessed your
-authorization endpoint but your service. This is because from a viewpoint
-of the SNS, the client application is your service.
+2. The client application name that the end-user will see at the authorization
+   endpoint of the SNS is not the client application that has accessed your
+   authorization endpoint but your service. This is because from a viewpoint
+   of the SNS, the client application is your service.
 
-At the authorization endpoint of the SNS, the end-user will either authorize
-or deny your service (= a client application from a viewpoint of the SNS).
-In either case, the user agent will be redirected to the registered redirect
-URI (`https://evaluation-dot-authlete.appspot.com/api/sns/redirection`).
+3. At the authorization endpoint of the SNS, the end-user will either authorize
+   or deny your service (= a client application from a viewpoint of the SNS).
+   In either case, the user agent will be redirected to the registered redirect
+   URI (`https://evaluation-dot-authlete.appspot.com/api/sns/redirection`),
+   which is Authlete's redirection endpoint.
+
+4. Authlete's redirection endpoint parses the response from the authorization
+   endpoint of the SNS. If the response contains `error` parameter, the endpoint
+   sends `302 Found` to the user agent in order to redirect it to the redirection
+   endpoint of the client application. This is an end of the original authorization
+   request initiated by the client application.
+
+5. Otherwise, if the response from the authorization endpoint of the SNS contains
+   `code` parameter, Authlete's redirection endpoint takes additional steps listed
+   below.
+
+   - Access the token endpoint of the SNS with the authorization code (= the value
+     of `code` parmeter) to get issued an access token. For example, in the case
+     of Facebook, the token endpoint is `https://graph.facebook.com/oauth/access_token`.
+
+   - Access a Web API of the SNS which provides basic profile information of the
+     end-user with the issued access token. In the case of Facebook, the Web API is
+     `https://graph.facebook.com/{version}/me`.
+
+   - Call the authentication callback endpoint of your service to ask your service
+     to authenticate the end-user. The authentication callback request from Authlete
+     contains some SNS-related parameters such as `sns` and `accessToken`. The
+     implementation of the authentication callback endpoint is supposed to check
+     whether the end-user who is identified by the SNS account is registered or not.
+
+   - Redirect the user agent to the redirection endpoint of the client application.
+     This is an end of the original authorization request initiated by the client
+     application.
 
 
 ## 2.8 Requirements for Authentication Callback Endpoint
