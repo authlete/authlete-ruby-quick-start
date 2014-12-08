@@ -352,14 +352,7 @@ SNS in advance. One requirement from Authlete for you is to register the
 following redirect URI.
 
 ```
-https://evaluation-dot-api.authlete.com/api/sns/redirection/{sns-name}
-```
-
-For instance, your Facebook client application should register the following
-redirect URI.
-
-```
-https://evaluation-dot-api.authlete.com/api/sns/redirection/facebook
+https://evaluation-dot-api.authlete.com/api/sns/redirection
 ```
 
 In Facebook, you can find a place to set redirect URIs by following
@@ -381,6 +374,10 @@ endpoint of the SNS is not the client application that has accessed your
 authorization endpoint but your service. This is because from a viewpoint
 of the SNS, the client application is your service.
 
+At the authorization endpoint of the SNS, the end-user will either authorize
+or deny your service (= a client application from a viewpoint of the SNS).
+In either case, the user agent will be redirected to the registered redirect
+URI (`https://evaluation-dot-authlete.appspot.com/api/sns/redirection`).
 
 
 ## 2.8 Requirements for Authentication Callback Endpoint
