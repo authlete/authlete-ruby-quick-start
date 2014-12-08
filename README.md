@@ -309,6 +309,8 @@ These days, many services delegate end-user authentication to external SNSes
 such as Facebook and Twitter. This mechanism is often called **social login**.
 In services which support social login, a login form is displayed with SNS icons.
 
+### 2.7.1 Configuration for Social Login
+
 If your service provides end-users with a way to register their user accounts
 using their existing SNS accounts, it is natural that you think the login form
 displayed at the authorization endpoint should show SNS icons for social login.
@@ -317,7 +319,11 @@ You can achieve this by adding two properties to your service's configuration.
 The properties are `supportedSnses` and `snsCredentials`. List SNSes in
 `supportedSnses` which you want to be displayed in the authorization UI and
 list pairs of SNS credentials (= API key and API secret) in `snsCredentials`.
-An example below results in that Facebook icon is displayed.
+
+An example below results in that Facebook icon is displayed. Valid values for
+`supportedSnses` and `sns` in `snsCredentials` are enum values in
+[com.authlete.common.types.Sns]
+(http://authlete.github.io/authlete-java-common/com/authlete/common/types/Sns.html).
 
 ```js
   ......,
@@ -335,7 +341,46 @@ An example below results in that Facebook icon is displayed.
 
 The resultant UI will look like the following figure.
 
-![Authorization UI](images/authorization-ui-with-sns-icons.png)
+![Authorization UI with SNS icons](images/authorization-ui-with-sns-icons.png)
+
+
+### 2.7.2 SNS Client Application Representing Your Service
+
+As you can guess, the existence of `snsCredentials` implies that you have to
+register a client application (which represents your service) to the target
+SNS in advance. One requirement from Authlete for you is to register the
+following redirect URI.
+
+```
+https://evaluation-dot-api.authlete.com/api/sns/redirection/{sns-name}
+```
+
+For instance, your Facebook client application should register the following
+redirect URI.
+
+```
+https://evaluation-dot-api.authlete.com/api/sns/redirection/facebook
+```
+
+In Facebook, you can find a place to set redirect URIs by following
+"Settings" > "Advanced" > "Security" > "Valid OAuth redirect URIs".
+
+![Facebook: Valid OAuth redirect URIs](images/facebook-redirect-uris-settings.png)
+
+
+### 2.7.3 Social Login Flow
+
+When an end-user selects social login at the authorization endpoint of your
+service (`/api/auth/authorization/direct/{service-api-key}`), Authlete
+redirects the user agent to the authorization endpoint of the target SNS.
+For example, in the case of Facebook, the user agent is redirected to
+`https://www.facebook.com/dialog/oauth`.
+
+The client application name that the end-user will see at the authorization
+endpoint of the SNS is not the client application that has accessed your
+authorization endpoint but your service. This is because from a viewpoint
+of the SNS, the client application is your service.
+
 
 
 ## 2.8 Requirements for Authentication Callback Endpoint
